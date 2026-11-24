@@ -5,6 +5,9 @@
 
 pub mod cases;
 pub mod display;
-pub mod shaping;
+pub mod eval;
 pub mod html;
+pub mod matrix;
+pub mod report;
+pub mod shaping;
 pub mod terminal;

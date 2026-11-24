@@ -36,7 +36,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         if: steps.cargo.outputs.present == 'true'
         with:
-          components: clippy
+          components: clippy, rustfmt
 
       - uses: Swatinem/rust-cache@v2
         if: steps.cargo.outputs.present == 'true'
@@ -48,3 +48,7 @@ jobs:
       - name: Clippy
         if: steps.cargo.outputs.present == 'true'
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Format
+        if: steps.cargo.outputs.present == 'true'
+        run: cargo fmt --all --check
