@@ -57,8 +57,15 @@ fn forced_direction_and_wrapping() {
 }
 
 #[test]
-fn colors_are_stripped() {
+fn colors_are_kept_by_default() {
     let (ok, out, _) = run(&["--no-align"], "\x1b[31mred\x1b[0m\n");
+    assert!(ok);
+    assert_eq!(out.trim_end(), "\x1b[31mred\x1b[0m");
+}
+
+#[test]
+fn no_color_strips_them() {
+    let (ok, out, _) = run(&["--no-align", "--no-color"], "\x1b[31mred\x1b[0m\n");
     assert!(ok);
     assert_eq!(out.trim_end(), "red");
 }
