@@ -1,0 +1,249 @@
+{
+  "tool": "yamin-test",
+  "version": "0.1.0",
+  "terminal": "conhost (Windows 11, default font)",
+  "cli": "none",
+  "date": "2026-11-24",
+  "results": [
+    {
+      "id": "arabic-01",
+      "category": "arabic",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "arabic-02",
+      "category": "arabic",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "arabic-03",
+      "category": "arabic",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "arabic-04",
+      "category": "arabic",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "arabic-05",
+      "category": "arabic",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mixed-01",
+      "category": "mixed",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mixed-02",
+      "category": "mixed",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mixed-03",
+      "category": "mixed",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mixed-04",
+      "category": "mixed",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mixed-05",
+      "category": "mixed",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "digits-01",
+      "category": "digits",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "digits-02",
+      "category": "digits",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "digits-03",
+      "category": "digits",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "digits-04",
+      "category": "digits",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "digits-05",
+      "category": "digits",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "paths-01",
+      "category": "paths",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "paths-02",
+      "category": "paths",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "paths-03",
+      "category": "paths",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "paths-04",
+      "category": "paths",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "paths-05",
+      "category": "paths",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "tashkeel-01",
+      "category": "tashkeel",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "tashkeel-02",
+      "category": "tashkeel",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "tashkeel-03",
+      "category": "tashkeel",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "tashkeel-04",
+      "category": "tashkeel",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "tashkeel-05",
+      "category": "tashkeel",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "lamalef-01",
+      "category": "lamalef",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "lamalef-02",
+      "category": "lamalef",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "lamalef-03",
+      "category": "lamalef",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "lamalef-04",
+      "category": "lamalef",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "lamalef-05",
+      "category": "lamalef",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mirroring-01",
+      "category": "mirroring",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mirroring-02",
+      "category": "mirroring",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mirroring-03",
+      "category": "mirroring",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mirroring-04",
+      "category": "mirroring",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "mirroring-05",
+      "category": "mirroring",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "code-01",
+      "category": "code",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "code-02",
+      "category": "code",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "code-03",
+      "category": "code",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "code-04",
+      "category": "code",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    },
+    {
+      "id": "code-05",
+      "category": "code",
+      "verdict": "fail",
+      "note": "Claude judged from screenshots: default console font has no Arabic glyphs (mojibake), even with UTF-8 code page"
+    }
+  ]
+}
