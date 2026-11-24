@@ -180,6 +180,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "yamin-cat"
+version = "0.1.0"
+dependencies = [
+ "yamin",
+ "yamin-test",
+]
+
+[[package]]
 name = "yamin-test"
 version = "0.1.0"
 dependencies = [
