@@ -4,7 +4,7 @@
 //! already reordered and shaped, so it reads correctly in a terminal with no
 //! BiDi support at all.
 
-use yamin::{cells_from_str, layout, Direction, Props};
+use yamin::{cells_from_str, layout, Direction, Glyph, Props};
 
 const LRO: char = '\u{202D}';
 const PDF: char = '\u{202C}';
@@ -26,6 +26,9 @@ pub struct Opts {
     pub align: bool,
     /// Wrap each row in LRO..PDF, for terminals that apply BiDi themselves.
     pub protect: bool,
+    /// Draw lam-alef in one cell instead of two (D1). For terminals without
+    /// BiDi, where the second cell otherwise shows as a visible gap.
+    pub compact_lamalef: bool,
 }
 
 impl Default for Opts {
@@ -35,6 +38,7 @@ impl Default for Opts {
             width: 80,
             align: true,
             protect: false,
+            compact_lamalef: false,
         }
     }
 }
@@ -118,14 +122,26 @@ pub fn render(line: &str, opts: &Opts) -> Vec<String> {
     let l = layout(&cells, width, props);
     (0..l.rows.len())
         .map(|r| {
+            // Visual cells to print: compact mode drops lam-alef tails, so the
+            // ligature takes one cell instead of leaving a gap beside it.
+            let mut cells = 0;
+            let mut text = String::new();
+            for vc in &l.rows[r] {
+                match &vc.glyph {
+                    Glyph::Text(t) => text.push_str(t),
+                    Glyph::LigatureTail if opts.compact_lamalef => continue,
+                    Glyph::LigatureTail | Glyph::Erased => text.push(' '),
+                }
+                cells += 1;
+            }
             let mut row = String::new();
             if opts.align && l.direction == Direction::Rtl {
-                row.push_str(&" ".repeat(width.saturating_sub(l.rows[r].len())));
+                row.push_str(&" ".repeat(width.saturating_sub(cells)));
             }
             if opts.protect {
                 row.push(LRO);
             }
-            row.push_str(&l.row_text(r));
+            row.push_str(&text);
             if opts.protect {
                 row.push(PDF);
             }
