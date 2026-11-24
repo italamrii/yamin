@@ -24,6 +24,20 @@ cargo run -p yamin-test -- html --out reference.html  # صفحة مرجعية ت
 - `--no-escapes`: بدون تسلسلات BDSM/SCP.
 - `--no-controls`: بدون LRO/PDF.
 
+### وضع التقييم
+
+```sh
+cargo run -p yamin-test -- eval --terminal "WezTerm" --cli none
+cargo run -p yamin-test -- eval --terminal "WezTerm" --cli "Claude Code" --category paths
+```
+
+يعرض الحالات واحدة واحدة، وتجيب على كل حالة بـ `p` (pass) أو `f` (fail) أو `s` (skip) أو `q` (quit). عند الفشل يطلب ملاحظة اختيارية.
+
+في النهاية يكتب تقريرين في `reports/`:
+
+- `yamin-<terminal>-<cli>-<date>.json`
+- `yamin-<terminal>-<cli>-<date>.md`
+
 ## ملاحظة لـ Windows
 
 إذا كان مسار المشروع طويلًا، يفشل الـ linker بالخطأ `LNK1104` لأن المسار يتجاوز 260 حرفًا. الحل أن تجعل مجلد البناء في مسار قصير:

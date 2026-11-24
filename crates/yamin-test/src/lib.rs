@@ -8,3 +8,5 @@ pub mod display;
 pub mod shaping;
 pub mod html;
 pub mod terminal;
+pub mod eval;
+pub mod report;
