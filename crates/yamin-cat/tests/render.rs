@@ -170,3 +170,47 @@ fn all_40_conformance_cases_render_as_expected() {
         );
     }
 }
+
+// ── wide characters (CJK, emoji) take two columns ─────────────────────
+
+#[test]
+fn wide_chars_wrap_by_columns_not_cells() {
+    let o = Opts {
+        align: false,
+        ..opts(DirMode::Ltr, 5)
+    };
+    assert_eq!(render("你好世界", &o), vec!["你好", "世界"]);
+}
+
+#[test]
+fn a_wide_char_is_never_split() {
+    let o = Opts {
+        align: false,
+        ..opts(DirMode::Ltr, 2)
+    };
+    assert_eq!(render("a你", &o), vec!["a", "你"]);
+}
+
+#[test]
+fn a_wide_char_wider_than_the_width_gets_its_own_row() {
+    let o = Opts {
+        align: false,
+        ..opts(DirMode::Ltr, 1)
+    };
+    assert_eq!(render("你a", &o), vec!["你", "a"]);
+}
+
+#[test]
+fn rtl_padding_counts_emoji_as_two_columns() {
+    // "😀 مرحبا" fills 2 + 1 + 5 = 8 columns: 12 columns of padding at width 20.
+    let rows = render("مرحبا 😀", &opts(DirMode::Auto, 20));
+    assert_eq!(rows.len(), 1);
+    let pad = rows[0].len() - rows[0].trim_start().len();
+    assert_eq!(pad, 12, "{:?}", rows[0]);
+    assert!(rows[0].trim_start().starts_with('😀'));
+}
+
+#[test]
+fn tabs_count_wide_chars_as_two_columns() {
+    assert_eq!(clean("你\tb"), format!("你{}b", " ".repeat(6)));
+}

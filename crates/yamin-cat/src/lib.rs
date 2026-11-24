@@ -4,7 +4,10 @@
 //! already reordered and shaped, so it reads correctly in a terminal with no
 //! BiDi support at all.
 
-use yamin::{cells_from_str, layout, Direction, Glyph, Props};
+use std::ops::Range;
+
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use yamin::{cells_from_str, layout_rows, Cell, Direction, Glyph, Props};
 
 const LRO: char = '\u{202D}';
 const PDF: char = '\u{202C}';
@@ -83,19 +86,38 @@ pub fn clean(line: &str) -> String {
             c if c.is_control() => {}
             c => {
                 out.push(c);
-                if !is_mark(c) {
-                    col += 1;
-                }
+                // Marks take no column; wide characters (CJK, emoji) take two.
+                col += c.width().unwrap_or(0);
             }
         }
     }
     out
 }
 
-/// Combining marks take no column (they live in their base's cell).
-fn is_mark(c: char) -> bool {
-    // Same test yamin uses to build cells: a mark joins the previous cell.
-    cells_from_str(&format!("a{c}")).len() == 1
+/// Columns a cell fills on screen: 2 for wide characters, 0 for marks.
+fn columns(cell: &Cell) -> usize {
+    match cell {
+        Cell::Text(t) => t.width(),
+        Cell::Erased => 1,
+    }
+}
+
+/// Greedy wrap by columns: a row holds as many cells as fit in `width`
+/// columns; a wide character is never split, and one that is wider than
+/// `width` still gets a row of its own.
+fn wrap(cells: &[Cell], width: usize) -> Vec<Range<usize>> {
+    let mut rows = Vec::new();
+    let (mut start, mut used) = (0, 0);
+    for (i, cell) in cells.iter().enumerate() {
+        let w = columns(cell);
+        if i > start && used + w > width {
+            rows.push(start..i);
+            (start, used) = (i, 0);
+        }
+        used += w;
+    }
+    rows.push(start..cells.len());
+    rows
 }
 
 /// Lay out one line and return its visual rows, top to bottom.
@@ -119,24 +141,29 @@ pub fn render(line: &str, opts: &Opts) -> Vec<String> {
             ..Props::default()
         },
     };
-    let l = layout(&cells, width, props);
+    let l = layout_rows(&cells, &wrap(&cells, width), props);
     (0..l.rows.len())
         .map(|r| {
             // Visual cells to print: compact mode drops lam-alef tails, so the
             // ligature takes one cell instead of leaving a gap beside it.
-            let mut cells = 0;
+            let mut used = 0;
             let mut text = String::new();
             for vc in &l.rows[r] {
                 match &vc.glyph {
-                    Glyph::Text(t) => text.push_str(t),
-                    Glyph::LigatureTail if opts.compact_lamalef => continue,
-                    Glyph::LigatureTail | Glyph::Erased => text.push(' '),
+                    Glyph::Text(t) => {
+                        text.push_str(t);
+                        used += t.width();
+                    }
+                    Glyph::LigatureTail if opts.compact_lamalef => {}
+                    Glyph::LigatureTail | Glyph::Erased => {
+                        text.push(' ');
+                        used += 1;
+                    }
                 }
-                cells += 1;
             }
             let mut row = String::new();
             if opts.align && l.direction == Direction::Rtl {
-                row.push_str(&" ".repeat(width.saturating_sub(cells)));
+                row.push_str(&" ".repeat(width.saturating_sub(used)));
             }
             if opts.protect {
                 row.push(LRO);
