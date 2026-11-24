@@ -119,11 +119,59 @@ pub fn cells_from_str(s: &str) -> Vec<Cell> {
 /// Lay out one paragraph soft-wrapped at `width` cells per row.
 pub fn layout(cells: &[Cell], width: usize, props: Props) -> Layout {
     let width = width.max(1);
-    let direction = props.direction;
     let ranges = (0..cells.len()).step_by(width).map(|s| s..(s + width).min(cells.len()));
-    let glyphs = shaping::shape(cells, width);
-    let rows = bidi::implicit_rows(cells, &glyphs, ranges, direction);
-    Layout { direction, rows }
+    match props.mode {
+        Mode::Implicit => {
+            let direction = if props.autodetect {
+                detect(cells).unwrap_or(props.direction)
+            } else {
+                props.direction
+            };
+            let glyphs = shaping::shape(cells, width);
+            let rows = bidi::implicit_rows(cells, &glyphs, ranges, direction);
+            Layout { direction, rows }
+        }
+        Mode::Explicit => {
+            let direction = props.direction;
+            Layout { direction, rows: ranges.map(|r| explicit_row(cells, r, direction)).collect() }
+        }
+    }
+}
+
+/// P2/P3 over the whole paragraph: the first strong character decides.
+/// `None` when there is none, so the caller falls back to the SCP direction.
+fn detect(cells: &[Cell]) -> Option<Direction> {
+    cells
+        .iter()
+        .filter_map(|c| match c {
+            Cell::Text(t) => Some(t.chars()),
+            Cell::Erased => None,
+        })
+        .flatten()
+        .find_map(|c| match bidi_class(c) {
+            BidiClass::L => Some(Direction::Ltr),
+            BidiClass::R | BidiClass::AL => Some(Direction::Rtl),
+            _ => None,
+        })
+}
+
+/// Explicit mode: the model is already visual. LTR draws it as-is; RTL draws
+/// the row reversed and mirrors mirrorable glyphs. No shaping.
+fn explicit_row(cells: &[Cell], row: std::ops::Range<usize>, direction: Direction) -> Vec<VisualCell> {
+    let rtl = direction == Direction::Rtl;
+    let mut out: Vec<VisualCell> = row
+        .map(|i| {
+            let glyph = match &cells[i] {
+                Cell::Text(t) => Glyph::Text(t.clone()),
+                Cell::Erased => Glyph::Erased,
+            };
+            VisualCell { logical: i, glyph: mirrored(glyph, rtl), rtl }
+        })
+        .collect();
+    if rtl {
+        out.reverse();
+    }
+    out
 }
 
 mod shaping;
