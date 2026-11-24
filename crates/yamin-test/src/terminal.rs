@@ -4,7 +4,8 @@
 use crate::cases::{Case, Dir};
 use crate::display::{cell_width, expected_visual};
 
-/// RTL expected lines are right-aligned to this many cells.
+/// Default width RTL expected lines are right-aligned to, when the terminal
+/// width is unknown.
 pub const LINE_WIDTH: usize = 48;
 
 const LRO: char = '\u{202D}';
@@ -26,21 +27,29 @@ pub struct Opts {
     pub controls: bool,
     /// Also print the expected line's code points.
     pub codepoints: bool,
+    /// Terminal width in cells; RTL expected lines are right-aligned to it.
+    /// Padding past the real width would wrap the line.
+    pub width: usize,
 }
 
 impl Default for Opts {
     fn default() -> Self {
-        Opts { escapes: true, controls: true, codepoints: false }
+        Opts {
+            escapes: true,
+            controls: true,
+            codepoints: false,
+            width: LINE_WIDTH,
+        }
     }
 }
 
 /// The expected line in visual order. Printed in explicit LTR mode so a
 /// conforming terminal draws it as-is; LRO..PDF protects it in terminals that
-/// apply BiDi anyway. RTL paragraphs are right-aligned to `LINE_WIDTH`.
+/// apply BiDi anyway. RTL paragraphs are right-aligned to `opts.width`.
 pub fn expected_line(case: &Case, opts: Opts) -> String {
     let visual = expected_visual(case);
     let pad = match case.dir {
-        Dir::Rtl => LINE_WIDTH.saturating_sub(cell_width(&visual)),
+        Dir::Rtl => opts.width.saturating_sub(cell_width(&visual)),
         Dir::Ltr => 0,
     };
     let mut s = String::new();
@@ -94,7 +103,10 @@ pub fn render_case(case: &Case, opts: Opts) -> String {
     s.push_str(&expected_line(case, opts));
     s.push('\n');
     if opts.codepoints {
-        s.push_str(&format!("codepoints: {}\n", codepoints(&expected_visual(case))));
+        s.push_str(&format!(
+            "codepoints: {}\n",
+            codepoints(&expected_visual(case))
+        ));
     }
     s
 }
