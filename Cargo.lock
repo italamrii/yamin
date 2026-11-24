@@ -183,6 +183,7 @@ dependencies = [
 name = "yamin-cat"
 version = "0.1.0"
 dependencies = [
+ "terminal_size",
  "yamin",
  "yamin-test",
 ]
