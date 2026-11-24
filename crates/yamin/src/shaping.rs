@@ -110,8 +110,9 @@ fn with_base(glyph: char, text: &str) -> String {
     s
 }
 
-/// Shape a paragraph. `width` is the row width: a ligature never spans rows.
-pub(crate) fn shape(cells: &[Cell], width: usize) -> Vec<Glyph> {
+/// Shape a paragraph. `row_of[i]` is the row of cell `i` (`usize::MAX` if it
+/// is in no row): a ligature never spans rows.
+pub(crate) fn shape(cells: &[Cell], row_of: &[usize]) -> Vec<Glyph> {
     let n = cells.len();
     let mut out: Vec<Glyph> = Vec::with_capacity(n);
     let mut i = 0;
@@ -129,7 +130,8 @@ pub(crate) fn shape(cells: &[Cell], width: usize) -> Vec<Glyph> {
         // Adjacent cells only: an erased cell breaks the join.
         let joins_prev = joins_right(j) && i > 0 && joins_left(join(&cells[i - 1]));
 
-        if c == '\u{0644}' && i + 1 < n && (i + 1) % width != 0 {
+        let same_row = i + 1 < n && row_of[i] != usize::MAX && row_of[i] == row_of[i + 1];
+        if c == '\u{0644}' && same_row {
             if let Some((alef_text, lig)) = match &cells[i + 1] {
                 Cell::Text(a) => a.chars().next().and_then(lam_alef).map(|l| (a, l)),
                 Cell::Erased => None,

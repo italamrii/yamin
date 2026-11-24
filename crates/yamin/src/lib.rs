@@ -5,6 +5,8 @@
 //! application wrote them; [`layout`] returns, for each row, the cells in
 //! visual left-to-right order with the glyph to draw.
 
+use std::ops::Range;
+
 use unicode_bidi::{bidi_class, BidiClass};
 
 /// One terminal cell in the model.
@@ -123,9 +125,22 @@ pub fn cells_from_str(s: &str) -> Vec<Cell> {
 /// Lay out one paragraph soft-wrapped at `width` cells per row.
 pub fn layout(cells: &[Cell], width: usize, props: Props) -> Layout {
     let width = width.max(1);
-    let ranges = (0..cells.len())
+    let ranges: Vec<Range<usize>> = (0..cells.len())
         .step_by(width)
-        .map(|s| s..(s + width).min(cells.len()));
+        .map(|s| s..(s + width).min(cells.len()))
+        .collect();
+    layout_rows(cells, &ranges, props)
+}
+
+/// Lay out one paragraph whose rows are given explicitly, as ranges of cell
+/// indices in order. Use it when rows hold different numbers of cells, e.g.
+/// when wide characters take two columns. Levels and shaping still cover the
+/// whole paragraph; a lam-alef ligature never spans two rows. Ranges are
+/// clamped to the paragraph; cells outside every range are laid out but not
+/// returned.
+pub fn layout_rows(cells: &[Cell], rows: &[Range<usize>], props: Props) -> Layout {
+    let n = cells.len();
+    let rows: Vec<Range<usize>> = rows.iter().map(|r| r.start.min(n)..r.end.min(n)).collect();
     match props.mode {
         Mode::Implicit => {
             let direction = if props.autodetect {
@@ -133,15 +148,24 @@ pub fn layout(cells: &[Cell], width: usize, props: Props) -> Layout {
             } else {
                 props.direction
             };
-            let glyphs = shaping::shape(cells, width);
-            let rows = bidi::implicit_rows(cells, &glyphs, ranges, direction);
+            let mut row_of = vec![usize::MAX; n];
+            for (r, range) in rows.iter().enumerate() {
+                for i in range.clone() {
+                    row_of[i] = r;
+                }
+            }
+            let glyphs = shaping::shape(cells, &row_of);
+            let rows = bidi::implicit_rows(cells, &glyphs, rows.into_iter(), direction);
             Layout { direction, rows }
         }
         Mode::Explicit => {
             let direction = props.direction;
             Layout {
                 direction,
-                rows: ranges.map(|r| explicit_row(cells, r, direction)).collect(),
+                rows: rows
+                    .into_iter()
+                    .map(|r| explicit_row(cells, r, direction))
+                    .collect(),
             }
         }
     }
