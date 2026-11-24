@@ -1,0 +1,9 @@
+[package]
+name = "yamin"
+version = "0.1.0"
+edition = "2021"
+description = "BiDi + Arabic shaping for terminal cell grids (Terminal BiDi recommendation, implicit + explicit modes)"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+unicode-bidi = "0.3"
