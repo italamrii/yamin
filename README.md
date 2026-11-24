@@ -6,6 +6,32 @@
 - **`yamin`:** المكتبة، وتطبّق القرارات المعتمدة في [docs/spec.md](docs/spec.md). نجحت في الحالات الأربعين كلها.
 - **`yamin-cat`:** أداة تمرّر النص عبر المكتبة، فيظهر العربي صحيحًا في أي terminal، حتى لو ما يدعم BiDi.
 
+## التثبيت
+
+حمّل الأرشيف المناسب لجهازك من صفحة **Releases**:
+
+| النظام | الملف |
+|---|---|
+| Linux (x86_64) | `yamin-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz` |
+| Windows (x86_64) | `yamin-vX.Y.Z-x86_64-pc-windows-msvc.zip` |
+| macOS (Apple Silicon) | `yamin-vX.Y.Z-aarch64-apple-darwin.tar.gz` |
+| macOS (Intel) | `yamin-vX.Y.Z-x86_64-apple-darwin.tar.gz` |
+
+كل أرشيف فيه `yamin-cat` و`yamin-test` والملفات التجريبية. وتقدر تتأكد من سلامة الأرشيف بمقارنته مع الملف `SHA256SUMS`.
+
+**الملفات غير موقّعة:**
+- **Windows:** ممكن يمنعها SmartScreen أو Smart App Control.
+- **macOS:** نفّذ هذا الأمر بعد فك الأرشيف:
+  ```sh
+  xattr -d com.apple.quarantine yamin-cat yamin-test
+  ```
+
+أو ابنِها بنفسك:
+
+```sh
+cargo build --release -p yamin-cat -p yamin-test
+```
+
 ## yamin-cat
 
 ```sh
