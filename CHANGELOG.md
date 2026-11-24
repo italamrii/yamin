@@ -37,4 +37,5 @@
 
 ### قيود معروفة
 - **Level 2** من مواصفة Terminal BiDi (حفظ حروف التحكم BiDi): غير مدعوم (D7).
-- **الملفات التنفيذية غير موقّعة:** Windows (SmartScreen وSmart App Control) وmacOS (Gatekeeper) ممكن يمنعون تشغيلها.
+- **الملفات الجاهزة:** متوفرة لـ Linux x86_64 وWindows x86_64 فقط. على macOS ابنِ الأداة من المصدر بأمر `cargo build --release`.
+- **الملفات التنفيذية غير موقّعة:** على Windows ممكن يمنعها SmartScreen أو Smart App Control.
