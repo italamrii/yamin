@@ -51,14 +51,15 @@ fn parse(argv: &[String]) -> Result<Args, String> {
     };
     while let Some(arg) = it.next() {
         let mut value = |name: &str| {
-            it.next().cloned().ok_or_else(|| format!("{name} needs a value"))
+            it.next()
+                .cloned()
+                .ok_or_else(|| format!("{name} needs a value"))
         };
         match arg.as_str() {
             "--category" => {
                 let v = value("--category")?;
-                a.category = Some(
-                    Category::from_slug(&v).ok_or_else(|| format!("unknown category: {v}"))?,
-                );
+                a.category =
+                    Some(Category::from_slug(&v).ok_or_else(|| format!("unknown category: {v}"))?);
             }
             "--id" => a.id = Some(value("--id")?),
             "--out" => a.out = Some(value("--out")?),
@@ -106,22 +107,38 @@ fn run(a: Args) -> Result<(), String> {
         }
         "eval" => {
             let terminal = a.terminal.clone().ok_or("eval needs --terminal NAME")?;
-            let cli = a.cli.clone().ok_or("eval needs --cli NAME (use \"none\" for a bare shell)")?;
+            let cli = a
+                .cli
+                .clone()
+                .ok_or("eval needs --cli NAME (use \"none\" for a bare shell)")?;
             let cases = selected(&a)?;
-            let meta = Meta { terminal, cli, date: report::today() };
+            let meta = Meta {
+                terminal,
+                cli,
+                date: report::today(),
+            };
             let stdin = std::io::stdin();
             let r = run_eval(&cases, meta, stdin.lock(), std::io::stdout(), a.opts)
                 .map_err(|e| e.to_string())?;
             let dir = std::path::PathBuf::from(a.out.as_deref().unwrap_or("reports"));
             std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
             let stem = report::file_stem(&r);
-            for (ext, body) in [("json", report::to_json(&r)), ("md", report::to_markdown(&r))] {
+            for (ext, body) in [
+                ("json", report::to_json(&r)),
+                ("md", report::to_markdown(&r)),
+            ] {
                 let path = dir.join(format!("{stem}.{ext}"));
                 std::fs::write(&path, body).map_err(|e| format!("{}: {e}", path.display()))?;
                 println!("wrote {}", path.display());
             }
             let s = report::summary(&r);
-            println!("{}/{} passed ({}%), {} skipped", s.pass, s.evaluated(), s.pass_pct(), s.skip);
+            println!(
+                "{}/{} passed ({}%), {} skipped",
+                s.pass,
+                s.evaluated(),
+                s.pass_pct(),
+                s.skip
+            );
         }
         "matrix" => {
             let dir = a.reports.as_deref().unwrap_or("reports");

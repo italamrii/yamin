@@ -58,24 +58,53 @@ fn eval_writes_json_and_markdown_reports() {
     let dir = std::env::temp_dir().join(format!("yamin-eval-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     let mut child = Command::new(env!("CARGO_BIN_EXE_yamin-test"))
-        .args(["eval", "--terminal", "Test Term", "--cli", "none", "--category", "lamalef"])
+        .args([
+            "eval",
+            "--terminal",
+            "Test Term",
+            "--cli",
+            "none",
+            "--category",
+            "lamalef",
+        ])
         .args(["--no-escapes", "--out"])
         .arg(&dir)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
         .unwrap();
-    child.stdin.take().unwrap().write_all(b"p\np\nf\nsplit glyph\np\ns\n").unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"p\np\nf\nsplit glyph\np\ns\n")
+        .unwrap();
     let out = child.wait_with_output().unwrap();
     assert!(out.status.success());
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("3/4 passed (75%), 1 skipped"), "{stdout}");
 
-    let files: Vec<_> = std::fs::read_dir(&dir).unwrap().map(|e| e.unwrap().path()).collect();
-    let json = files.iter().find(|p| p.extension().unwrap() == "json").expect("json");
-    let md = files.iter().find(|p| p.extension().unwrap() == "md").expect("md");
-    assert!(json.file_name().unwrap().to_str().unwrap().starts_with("yamin-test-term-none-"));
-    assert!(std::fs::read_to_string(json).unwrap().contains("split glyph"));
+    let files: Vec<_> = std::fs::read_dir(&dir)
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .collect();
+    let json = files
+        .iter()
+        .find(|p| p.extension().unwrap() == "json")
+        .expect("json");
+    let md = files
+        .iter()
+        .find(|p| p.extension().unwrap() == "md")
+        .expect("md");
+    assert!(json
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .starts_with("yamin-test-term-none-"));
+    assert!(std::fs::read_to_string(json)
+        .unwrap()
+        .contains("split glyph"));
     assert!(std::fs::read_to_string(md).unwrap().contains("lamalef-03"));
     let _ = std::fs::remove_dir_all(&dir);
 }

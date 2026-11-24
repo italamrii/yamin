@@ -98,11 +98,21 @@ pub fn to_markdown(r: &Report) -> String {
             c.add(x.verdict);
         }
         if c.total > 0 {
-            md.push_str(&format!("| {} | {} | {} | {} |\n", cat.slug(), c.pass, c.fail, c.skip));
+            md.push_str(&format!(
+                "| {} | {} | {} | {} |\n",
+                cat.slug(),
+                c.pass,
+                c.fail,
+                c.skip
+            ));
         }
     }
 
-    let fails: Vec<_> = r.results.iter().filter(|x| x.verdict == Verdict::Fail).collect();
+    let fails: Vec<_> = r
+        .results
+        .iter()
+        .filter(|x| x.verdict == Verdict::Fail)
+        .collect();
     md.push_str("\n## Failures\n\n");
     if fails.is_empty() {
         md.push_str("None.\n");

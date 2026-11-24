@@ -30,7 +30,11 @@ pub struct Opts {
 
 impl Default for Opts {
     fn default() -> Self {
-        Opts { escapes: true, controls: true, codepoints: false }
+        Opts {
+            escapes: true,
+            controls: true,
+            codepoints: false,
+        }
     }
 }
 
@@ -94,7 +98,10 @@ pub fn render_case(case: &Case, opts: Opts) -> String {
     s.push_str(&expected_line(case, opts));
     s.push('\n');
     if opts.codepoints {
-        s.push_str(&format!("codepoints: {}\n", codepoints(&expected_visual(case))));
+        s.push_str(&format!(
+            "codepoints: {}\n",
+            codepoints(&expected_visual(case))
+        ));
     }
     s
 }

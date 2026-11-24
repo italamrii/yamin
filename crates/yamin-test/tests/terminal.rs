@@ -26,7 +26,11 @@ fn expected_line_uses_explicit_mode_and_lro_by_default() {
 #[test]
 fn no_escapes_and_no_controls_give_plain_text() {
     let c = find("mixed-01").unwrap();
-    let opts = Opts { escapes: false, controls: false, codepoints: false };
+    let opts = Opts {
+        escapes: false,
+        controls: false,
+        codepoints: false,
+    };
     let line = expected_line(c, opts);
     assert!(!line.contains('\x1b'));
     assert!(!line.contains(LRO));
@@ -36,7 +40,11 @@ fn no_escapes_and_no_controls_give_plain_text() {
 #[test]
 fn rtl_expected_line_is_right_aligned() {
     let c = find("arabic-01").unwrap();
-    let opts = Opts { escapes: false, controls: false, codepoints: false };
+    let opts = Opts {
+        escapes: false,
+        controls: false,
+        codepoints: false,
+    };
     let line = expected_line(c, opts);
     assert_eq!(cell_width(&line), LINE_WIDTH);
 }
@@ -44,7 +52,11 @@ fn rtl_expected_line_is_right_aligned() {
 #[test]
 fn ltr_expected_line_is_not_padded() {
     let c = find("mixed-02").unwrap();
-    let opts = Opts { escapes: false, controls: false, codepoints: false };
+    let opts = Opts {
+        escapes: false,
+        controls: false,
+        codepoints: false,
+    };
     assert_eq!(expected_line(c, opts), expected_visual(c));
 }
 
