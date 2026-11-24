@@ -1,7 +1,10 @@
 use yamin::{cells_from_str, layout, Cell, Direction, Props};
 
 fn rtl() -> Props {
-    Props { direction: Direction::Rtl, ..Props::default() }
+    Props {
+        direction: Direction::Rtl,
+        ..Props::default()
+    }
 }
 
 fn order(cells: &[Cell], width: usize, props: Props) -> Vec<Vec<usize>> {
@@ -19,7 +22,10 @@ fn cells_keep_marks_with_their_base() {
 
 #[test]
 fn ltr_latin_is_identity() {
-    assert_eq!(order(&cells_from_str("abc"), 3, Props::default()), vec![vec![0, 1, 2]]);
+    assert_eq!(
+        order(&cells_from_str("abc"), 3, Props::default()),
+        vec![vec![0, 1, 2]]
+    );
 }
 
 #[test]
@@ -63,7 +69,10 @@ fn levels_use_the_whole_paragraph_but_reorder_per_row() {
     // space between them resolves R: row 1 shows "2 1".
     // L1: row 0's trailing spaces return to the paragraph level (stay on the right).
     let c = cells_from_str("ب  1 2");
-    assert_eq!(order(&c, 3, Props::default()), vec![vec![0, 1, 2], vec![5, 4, 3]]);
+    assert_eq!(
+        order(&c, 3, Props::default()),
+        vec![vec![0, 1, 2], vec![5, 4, 3]]
+    );
 }
 
 #[test]

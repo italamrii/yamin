@@ -33,7 +33,12 @@ pub fn build(reports: &[Report]) -> String {
         }
     }
     let terminals: BTreeSet<&str> = latest.keys().map(|k| k.0).collect();
-    let mut clis: Vec<&str> = latest.keys().map(|k| k.1).collect::<BTreeSet<_>>().into_iter().collect();
+    let mut clis: Vec<&str> = latest
+        .keys()
+        .map(|k| k.1)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
     clis.sort_by(cli_order);
 
     let mut md = String::from("# yamin-test results matrix\n\n");
@@ -59,7 +64,8 @@ pub fn load_dir(dir: &Path) -> Result<Vec<Report>, String> {
         if path.extension().and_then(|e| e.to_str()) != Some("json") {
             continue;
         }
-        let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+        let text =
+            std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
         reports.push(from_json(&text).map_err(|e| format!("{}: {e}", path.display()))?);
     }
     Ok(reports)
