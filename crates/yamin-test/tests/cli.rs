@@ -134,3 +134,34 @@ fn matrix_reads_reports_dir() {
     assert!(out.contains("| foot | 1/2 (50%) |"), "{out}");
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+#[test]
+fn show_respects_width() {
+    // arabic-01 is 13 cells wide: at --width 20 it gets 7 cells of padding.
+    let (ok, out, err) = run(&[
+        "show",
+        "--id",
+        "arabic-01",
+        "--no-escapes",
+        "--no-controls",
+        "--width",
+        "20",
+    ]);
+    assert!(ok, "{err}");
+    let expected = out
+        .lines()
+        .skip_while(|l| !l.starts_with("── expected"))
+        .nth(1)
+        .unwrap();
+    assert!(
+        expected.starts_with("       ") && !expected.starts_with("        "),
+        "{expected:?}"
+    );
+}
+
+#[test]
+fn width_must_be_a_number() {
+    let (ok, _, err) = run(&["show", "--width", "wide"]);
+    assert!(!ok);
+    assert!(err.contains("--width"));
+}

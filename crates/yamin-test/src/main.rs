@@ -22,6 +22,8 @@ display options (show, eval):
   --no-escapes    do not emit BDSM/SCP escape sequences
   --no-controls   do not wrap the expected line in LRO..PDF
   --codepoints    also print the expected line's code points
+  --width N       terminal width for right-aligning RTL lines
+                  (default: detected terminal width, else 48)
 
 categories: arabic mixed digits paths tashkeel lamalef mirroring code";
 
@@ -49,6 +51,7 @@ fn parse(argv: &[String]) -> Result<Args, String> {
         reports: None,
         opts: Opts::default(),
     };
+    let mut width_given = false;
     while let Some(arg) = it.next() {
         let mut value = |name: &str| {
             it.next()
@@ -69,7 +72,20 @@ fn parse(argv: &[String]) -> Result<Args, String> {
             "--no-escapes" => a.opts.escapes = false,
             "--no-controls" => a.opts.controls = false,
             "--codepoints" => a.opts.codepoints = true,
+            "--width" => {
+                let v = value("--width")?;
+                a.opts.width = v
+                    .parse()
+                    .map_err(|_| format!("--width needs a number of columns, got {v}"))?;
+                width_given = true;
+            }
             other => return Err(format!("unknown option: {other}")),
+        }
+    }
+    if !width_given {
+        // Right-align to the real terminal; padding past it would wrap the line.
+        if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size() {
+            a.opts.width = w as usize;
         }
     }
     Ok(a)
