@@ -19,7 +19,14 @@ fn first(n: usize) -> Vec<&'static Case> {
 
 fn eval(cases: &[&Case], script: &str) -> yamin_test::eval::Report {
     let mut out = Vec::new();
-    run_eval(cases, meta(), Cursor::new(script), &mut out, Opts::default()).unwrap()
+    run_eval(
+        cases,
+        meta(),
+        Cursor::new(script),
+        &mut out,
+        Opts::default(),
+    )
+    .unwrap()
 }
 
 #[test]
@@ -87,7 +94,10 @@ fn markdown_has_summary_categories_and_failures() {
 #[test]
 fn file_stem_is_slugged() {
     let r = eval(&first(1), "p\n");
-    assert_eq!(file_stem(&r), "yamin-windows-terminal-claude-code-2026-11-24");
+    assert_eq!(
+        file_stem(&r),
+        "yamin-windows-terminal-claude-code-2026-11-24"
+    );
 }
 
 #[test]

@@ -2,8 +2,29 @@
 
 محرك BiDi + Arabic shaping لشبكة خلايا الـ terminal، مكتوب بـ Rust.
 
-- **المرحلة 1 (الحالية):** `yamin-test`، أداة مطابقة من 40 حالة.
-- **مكتبة `yamin` نفسها:** لم تبدأ بعد، وتنتظر الموافقة على [docs/spec.md](docs/spec.md).
+- **`yamin-test`:** أداة مطابقة من 40 حالة.
+- **`yamin`:** المكتبة، وتطبّق القرارات المعتمدة في [docs/spec.md](docs/spec.md). نجحت في الحالات الأربعين كلها.
+
+## yamin (المكتبة)
+
+```rust
+use yamin::{cells_from_str, layout, Direction, Props};
+
+let cells = cells_from_str("مرحبا world!");          // الـ model: خلايا بالترتيب المنطقي
+let props = Props { direction: Direction::Rtl, ..Props::default() };
+let l = layout(&cells, 80, props);                     // فقرة واحدة ملتفة على 80 عمودًا
+for vc in &l.rows[0] {
+    // vc.logical: رقم الخلية في الـ model
+    // vc.glyph: ما يُرسم (بعد الـ shaping والـ mirroring)
+    // vc.rtl: يحدد جهة المؤشر
+}
+```
+
+| الوضع | ما تفعله المكتبة |
+|---|---|
+| `Mode::Implicit` (الافتراضي) | UAX#9 على الفقرة كاملة (عبر `unicode-bidi`) ثم إعادة ترتيب كل صف (L1 وL2)، وshaping منطقي على الفقرة (D3)، ولام-ألف على خليتين (D1)، وmirroring بقاعدة L4، والخلايا الممسوحة تذهب لنهاية الصف |
+| `Mode::Explicit` | لا BiDi ولا shaping. في LTR يُرسم الصف كما هو، وفي RTL يُعكس الصف مع mirroring |
+| `autodetect: true` | يُحدَّد الاتجاه من أول حرف strong في الفقرة (P2/P3)، وإن لم يوجد يُستخدم `direction` احتياطيًا. يعمل في implicit فقط، ومعطّل افتراضيًا (D5) |
 
 ## yamin-test
 

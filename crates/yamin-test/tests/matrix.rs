@@ -3,7 +3,11 @@ use yamin_test::matrix::build;
 
 fn report(terminal: &str, cli: &str, date: &str, pass: usize, fail: usize, skip: usize) -> Report {
     let mut results = Vec::new();
-    for (v, n) in [(Verdict::Pass, pass), (Verdict::Fail, fail), (Verdict::Skip, skip)] {
+    for (v, n) in [
+        (Verdict::Pass, pass),
+        (Verdict::Fail, fail),
+        (Verdict::Skip, skip),
+    ] {
         for _ in 0..n {
             results.push(CaseResult {
                 id: "x".into(),

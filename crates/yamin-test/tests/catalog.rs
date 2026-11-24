@@ -27,7 +27,11 @@ fn ids_are_unique_and_prefixed_by_category() {
 fn every_case_cites_rules_and_a_description() {
     for c in all() {
         assert!(!c.rules.is_empty(), "{} has no rules", c.id);
-        assert!(!c.description.trim().is_empty(), "{} has no description", c.id);
+        assert!(
+            !c.description.trim().is_empty(),
+            "{} has no description",
+            c.id
+        );
     }
 }
 
