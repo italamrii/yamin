@@ -83,3 +83,10 @@ fn help_prints_usage() {
     assert!(ok);
     assert!(out.contains("usage: yamin-cat"));
 }
+
+#[test]
+fn compact_lamalef_flag() {
+    let (ok, out, err) = run(&["--no-align", "--compact-lamalef"], "سلام\n");
+    assert!(ok, "{err}");
+    assert_eq!(out.trim_end(), "\u{FEE1}\u{FEFC}\u{FEB3}");
+}

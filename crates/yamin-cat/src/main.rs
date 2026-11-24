@@ -15,6 +15,7 @@ options:
   --width N            wrap/align width (default: terminal width, else 80)
   --no-align           do not right-align RTL lines
   --protect            wrap each line in LRO..PDF (for terminals that do BiDi)
+  --compact-lamalef    draw lam-alef in one cell (no gap in non-BiDi terminals)
   -h, --help           show this help
 
 Colors and other escape sequences are removed.";
@@ -57,6 +58,7 @@ fn parse(argv: &[String]) -> Result<Args, String> {
             }
             "--no-align" => a.opts.align = false,
             "--protect" => a.opts.protect = true,
+            "--compact-lamalef" => a.opts.compact_lamalef = true,
             "-h" | "--help" => a.help = true,
             s if s.starts_with('-') && s != "-" => return Err(format!("unknown option: {s}")),
             file => a.files.push(file.to_string()),

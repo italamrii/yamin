@@ -8,6 +8,63 @@ fn opts(dir: DirMode, width: usize) -> Opts {
         width,
         align: true,
         protect: false,
+        compact_lamalef: false,
+    }
+}
+
+// ── compact lam-alef: one cell instead of two (D1 stays the default) ──
+
+fn compact(width: usize, align: bool) -> Opts {
+    Opts {
+        compact_lamalef: true,
+        align,
+        ..opts(DirMode::Auto, width)
+    }
+}
+
+#[test]
+fn default_keeps_the_two_cell_lam_alef_d1() {
+    let o = Opts {
+        align: false,
+        ..opts(DirMode::Auto, 40)
+    };
+    assert_eq!(render("سلام", &o), vec!["\u{FEE1} \u{FEFC}\u{FEB3}"]);
+}
+
+#[test]
+fn compact_lam_alef_drops_the_filler_cell() {
+    assert_eq!(
+        render("سلام", &compact(40, false)),
+        vec!["\u{FEE1}\u{FEFC}\u{FEB3}"]
+    );
+    assert_eq!(render("لا", &compact(40, false)), vec!["\u{FEFB}"]);
+}
+
+#[test]
+fn compact_lam_alef_still_right_aligns_to_the_full_width() {
+    let rows = render("السلام عليكم", &compact(20, true));
+    assert_eq!(rows.len(), 1);
+    assert_eq!(cell_width(&rows[0]), 20);
+    assert!(!rows[0].trim_start().contains("\u{FEFC} "), "{:?}", rows[0]);
+}
+
+#[test]
+fn compact_does_not_touch_text_without_lam_alef() {
+    for c in all().iter().filter(|c| !c.rules.contains(&"D1")) {
+        let dir = match c.dir {
+            Dir::Ltr => DirMode::Ltr,
+            Dir::Rtl => DirMode::Rtl,
+        };
+        let o = Opts {
+            dir,
+            ..compact(200, false)
+        };
+        assert_eq!(
+            render(c.input, &o),
+            vec![expected_visual(c)],
+            "case {}",
+            c.id
+        );
     }
 }
 
