@@ -1,13 +1,20 @@
 use yamin_test::shaping::{shape, LAM_ALEF_FILLER};
 
 fn cps(clusters: &[String]) -> Vec<u32> {
-    clusters.iter().flat_map(|c| c.chars()).map(|c| c as u32).collect()
+    clusters
+        .iter()
+        .flat_map(|c| c.chars())
+        .map(|c| c as u32)
+        .collect()
 }
 
 #[test]
 fn shapes_marhaba_with_positional_forms() {
     // م initial, ر final, ح initial (ر does not join left), ب medial, ا final
-    assert_eq!(cps(&shape("مرحبا")), vec![0xFEE3, 0xFEAE, 0xFEA3, 0xFE92, 0xFE8E]);
+    assert_eq!(
+        cps(&shape("مرحبا")),
+        vec![0xFEE3, 0xFEAE, 0xFEA3, 0xFE92, 0xFE8E]
+    );
 }
 
 #[test]
@@ -44,7 +51,10 @@ fn harakat_stay_in_their_base_cluster_and_are_transparent() {
     // ب initial + kasra, س medial + sukun, م final + kasra
     let s = shape("بِسْمِ");
     assert_eq!(s.len(), 3);
-    assert_eq!(cps(&s), vec![0xFE91, 0x0650, 0xFEB4, 0x0652, 0xFEE2, 0x0650]);
+    assert_eq!(
+        cps(&s),
+        vec![0xFE91, 0x0650, 0xFEB4, 0x0652, 0xFEE2, 0x0650]
+    );
 }
 
 #[test]
