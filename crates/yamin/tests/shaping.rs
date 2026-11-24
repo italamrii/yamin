@@ -1,7 +1,10 @@
 use yamin::{cells_from_str, layout, Cell, Direction, Glyph, Props};
 
 fn rtl() -> Props {
-    Props { direction: Direction::Rtl, ..Props::default() }
+    Props {
+        direction: Direction::Rtl,
+        ..Props::default()
+    }
 }
 
 fn rows(text: &str, width: usize, props: Props) -> Vec<String> {
@@ -17,7 +20,10 @@ fn s(cps: &[u32]) -> String {
 #[test]
 fn positional_forms_in_visual_order() {
     // مرحبا: م initial, ر final, ح initial, ب medial, ا final — drawn right to left.
-    assert_eq!(rows("مرحبا", 5, rtl()), vec![s(&[0xFE8E, 0xFE92, 0xFEA3, 0xFEAE, 0xFEE3])]);
+    assert_eq!(
+        rows("مرحبا", 5, rtl()),
+        vec![s(&[0xFE8E, 0xFE92, 0xFEA3, 0xFEAE, 0xFEE3])]
+    );
 }
 
 #[test]
@@ -56,7 +62,10 @@ fn shaping_runs_on_the_paragraph_across_soft_wrap_d3() {
 #[test]
 fn lam_alef_split_by_wrap_does_not_ligate() {
     // بل | ا : lam joins both sides (medial), alef is final; no ligature.
-    assert_eq!(rows("بلا", 2, rtl()), vec![s(&[0xFEE0, 0xFE91]), s(&[0xFE8E])]);
+    assert_eq!(
+        rows("بلا", 2, rtl()),
+        vec![s(&[0xFEE0, 0xFE91]), s(&[0xFE8E])]
+    );
 }
 
 #[test]
@@ -91,7 +100,10 @@ fn brackets_mirror_only_when_resolved_rtl_l4() {
     // RTL paragraph: (ب) — brackets are R, reversed and mirrored.
     assert_eq!(rows("(ب)", 3, rtl())[0], s(&[0x28, 0xFE8F, 0x29]));
     // LTR paragraph: call (ب) — brackets are L, not mirrored.
-    assert_eq!(rows("x (ب)", 5, Props::default())[0], s(&[0x78, 0x20, 0x28, 0xFE8F, 0x29]));
+    assert_eq!(
+        rows("x (ب)", 5, Props::default())[0],
+        s(&[0x78, 0x20, 0x28, 0xFE8F, 0x29])
+    );
     // Latin in LTR is untouched.
     assert_eq!(rows("(a)", 3, Props::default())[0], "(a)");
 }

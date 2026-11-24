@@ -14,11 +14,23 @@ fn all_40_cases_match_the_expected_visual_line() {
             Dir::Ltr => Direction::Ltr,
             Dir::Rtl => Direction::Rtl,
         };
-        let l = layout(&cells, cells.len(), Props { direction, ..Props::default() });
+        let l = layout(
+            &cells,
+            cells.len(),
+            Props {
+                direction,
+                ..Props::default()
+            },
+        );
         let (got, want) = (l.row_text(0), expected_visual(case));
         if got != want {
             failures.push(format!("{}: got {got:?}, want {want:?}", case.id));
         }
     }
-    assert!(failures.is_empty(), "{} of 40 failed:\n{}", failures.len(), failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "{} of 40 failed:\n{}",
+        failures.len(),
+        failures.join("\n")
+    );
 }

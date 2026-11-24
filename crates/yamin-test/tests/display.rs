@@ -8,9 +8,11 @@ fn ltr_run_is_unchanged() {
 
 #[test]
 fn rtl_run_is_shaped_reversed_and_mirrored() {
-    let expected: String = ['(', '\u{FE8E}', '\u{FE92}', '\u{FEA3}', '\u{FEAE}', '\u{FEE3}', ')']
-        .iter()
-        .collect();
+    let expected: String = [
+        '(', '\u{FE8E}', '\u{FE92}', '\u{FEA3}', '\u{FEAE}', '\u{FEE3}', ')',
+    ]
+    .iter()
+    .collect();
     assert_eq!(render_run(&Run::Rtl("(مرحبا)")), expected);
 }
 

@@ -1,11 +1,19 @@
 use yamin::{cells_from_str, layout, Cell, Direction, Mode, Props};
 
 fn explicit(direction: Direction) -> Props {
-    Props { mode: Mode::Explicit, direction, autodetect: false }
+    Props {
+        mode: Mode::Explicit,
+        direction,
+        autodetect: false,
+    }
 }
 
 fn auto(fallback: Direction) -> Props {
-    Props { mode: Mode::Implicit, direction: fallback, autodetect: true }
+    Props {
+        mode: Mode::Implicit,
+        direction: fallback,
+        autodetect: true,
+    }
 }
 
 // ── explicit mode: the app already did BiDi + shaping ─────────────────
@@ -43,8 +51,15 @@ fn explicit_rtl_mirrors_and_ltr_does_not() {
 
 #[test]
 fn explicit_ignores_autodetect() {
-    let p = Props { mode: Mode::Explicit, direction: Direction::Ltr, autodetect: true };
-    assert_eq!(layout(&cells_from_str("مرحبا"), 5, p).direction, Direction::Ltr);
+    let p = Props {
+        mode: Mode::Explicit,
+        direction: Direction::Ltr,
+        autodetect: true,
+    };
+    assert_eq!(
+        layout(&cells_from_str("مرحبا"), 5, p).direction,
+        Direction::Ltr
+    );
 }
 
 #[test]
@@ -60,7 +75,10 @@ fn explicit_rows_are_independent() {
 fn autodetect_first_strong_arabic_gives_rtl() {
     let l = layout(&cells_from_str("مرحبا world"), 11, auto(Direction::Ltr));
     assert_eq!(l.direction, Direction::Rtl);
-    assert_eq!(l.visual_to_logical(0), vec![6, 7, 8, 9, 10, 5, 4, 3, 2, 1, 0]);
+    assert_eq!(
+        l.visual_to_logical(0),
+        vec![6, 7, 8, 9, 10, 5, 4, 3, 2, 1, 0]
+    );
 }
 
 #[test]
@@ -71,8 +89,14 @@ fn autodetect_first_strong_latin_gives_ltr() {
 
 #[test]
 fn autodetect_without_strong_chars_uses_the_fallback() {
-    assert_eq!(layout(&cells_from_str("123 !"), 5, auto(Direction::Rtl)).direction, Direction::Rtl);
-    assert_eq!(layout(&cells_from_str("123 !"), 5, auto(Direction::Ltr)).direction, Direction::Ltr);
+    assert_eq!(
+        layout(&cells_from_str("123 !"), 5, auto(Direction::Rtl)).direction,
+        Direction::Rtl
+    );
+    assert_eq!(
+        layout(&cells_from_str("123 !"), 5, auto(Direction::Ltr)).direction,
+        Direction::Ltr
+    );
 }
 
 #[test]
@@ -83,5 +107,8 @@ fn autodetect_looks_past_the_first_row() {
 
 #[test]
 fn autodetect_off_by_default_d5() {
-    assert_eq!(layout(&cells_from_str("مرحبا"), 5, Props::default()).direction, Direction::Ltr);
+    assert_eq!(
+        layout(&cells_from_str("مرحبا"), 5, Props::default()).direction,
+        Direction::Ltr
+    );
 }
