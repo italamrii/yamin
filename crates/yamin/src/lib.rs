@@ -121,12 +121,29 @@ pub fn layout(cells: &[Cell], width: usize, props: Props) -> Layout {
     let width = width.max(1);
     let direction = props.direction;
     let ranges = (0..cells.len()).step_by(width).map(|s| s..(s + width).min(cells.len()));
-    let rows = bidi::implicit_rows(cells, ranges, direction);
+    let glyphs = shaping::shape(cells, width);
+    let rows = bidi::implicit_rows(cells, &glyphs, ranges, direction);
     Layout { direction, rows }
 }
 
+mod shaping;
+
+/// UAX#9 L4: a cell resolved RTL draws the Bidi_Mirroring_Glyph of its base.
+fn mirrored(glyph: Glyph, rtl: bool) -> Glyph {
+    match glyph {
+        Glyph::Text(t) if rtl => {
+            let mut chars = t.chars();
+            match chars.next().and_then(unicode_bidi_mirroring::get_mirrored) {
+                Some(m) => Glyph::Text(std::iter::once(m).chain(chars).collect()),
+                None => Glyph::Text(t),
+            }
+        }
+        other => other,
+    }
+}
+
 mod bidi {
-    use super::{Cell, Direction, Glyph, VisualCell};
+    use super::{mirrored, Cell, Direction, Glyph, VisualCell};
     use std::ops::Range;
     use unicode_bidi::{bidi_class, BidiClass, BidiInfo, Level};
 
@@ -163,17 +180,11 @@ mod bidi {
         }
     }
 
-    fn glyph(cell: &Cell) -> Glyph {
-        match cell {
-            Cell::Text(t) => Glyph::Text(t.clone()),
-            Cell::Erased => Glyph::Erased,
-        }
-    }
-
     /// Implicit mode: levels resolved on the whole paragraph, reordering per
     /// row (UAX#9 section 3: lines are reordered after levels are resolved).
     pub(super) fn implicit_rows(
         cells: &[Cell],
+        glyphs: &[Glyph],
         rows: impl Iterator<Item = Range<usize>>,
         direction: Direction,
     ) -> Vec<Vec<VisualCell>> {
@@ -208,10 +219,9 @@ mod bidi {
                     if levels[run.start].is_rtl() {
                         in_run.reverse();
                     }
-                    visual.extend(in_run.into_iter().map(|i| VisualCell {
-                        logical: i,
-                        glyph: glyph(&cells[i]),
-                        rtl: levels[para.start(i)].is_rtl(),
+                    visual.extend(in_run.into_iter().map(|i| {
+                        let rtl = levels[para.start(i)].is_rtl();
+                        VisualCell { logical: i, glyph: mirrored(glyphs[i].clone(), rtl), rtl }
                     }));
                 }
             }
