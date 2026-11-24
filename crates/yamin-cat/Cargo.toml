@@ -1,0 +1,12 @@
+[package]
+name = "yamin-cat"
+version = "0.1.0"
+edition = "2021"
+description = "Pipe text through yamin so Arabic shows correctly in any terminal"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+yamin = { path = "../yamin" }
+
+[dev-dependencies]
+yamin-test = { path = "../yamin-test" }
