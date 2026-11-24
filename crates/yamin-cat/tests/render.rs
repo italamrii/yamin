@@ -9,6 +9,7 @@ fn opts(dir: DirMode, width: usize) -> Opts {
         align: true,
         protect: false,
         compact_lamalef: false,
+        color: true,
     }
 }
 
@@ -213,4 +214,61 @@ fn rtl_padding_counts_emoji_as_two_columns() {
 #[test]
 fn tabs_count_wide_chars_as_two_columns() {
     assert_eq!(clean("你\tb"), format!("你{}b", " ".repeat(6)));
+}
+
+// ── colors (SGR) follow their characters through reordering ───────────
+
+fn plain(dir: DirMode) -> Opts {
+    Opts {
+        align: false,
+        ..opts(dir, 80)
+    }
+}
+
+#[test]
+fn colored_latin_keeps_its_color() {
+    assert_eq!(
+        render("\x1b[31mred\x1b[0m", &plain(DirMode::Auto)),
+        vec!["\x1b[31mred\x1b[0m"]
+    );
+}
+
+#[test]
+fn color_follows_the_arabic_word_after_reordering() {
+    // Logical: [red]مرحبا[reset] world  →  visual: world ⟨red⟩ابحرم⟨reset⟩
+    let rows = render("\x1b[31mمرحبا\x1b[0m world", &plain(DirMode::Rtl));
+    assert_eq!(
+        rows,
+        vec!["world \x1b[31m\u{FE8E}\u{FE92}\u{FEA3}\u{FEAE}\u{FEE3}\x1b[0m"]
+    );
+}
+
+#[test]
+fn stacked_attributes_are_kept_together() {
+    assert_eq!(
+        render("\x1b[1m\x1b[31mab\x1b[0m", &plain(DirMode::Ltr)),
+        vec!["\x1b[1m\x1b[31mab\x1b[0m"]
+    );
+}
+
+#[test]
+fn a_color_change_inside_a_word_does_not_break_joining_d2() {
+    let rows = render("\x1b[31mم\x1b[32mرحبا\x1b[0m", &plain(DirMode::Rtl));
+    // م keeps its initial form although its neighbour has another color.
+    assert!(rows[0].contains('\u{FEE3}'), "{:?}", rows[0]);
+    assert!(rows[0].contains("\x1b[31m\u{FEE3}"), "{:?}", rows[0]);
+}
+
+#[test]
+fn no_color_strips_escapes() {
+    let o = Opts {
+        color: false,
+        ..plain(DirMode::Auto)
+    };
+    assert_eq!(render("\x1b[31mred\x1b[0m", &o), vec!["red"]);
+}
+
+#[test]
+fn uncolored_text_gets_no_escapes() {
+    assert_eq!(render("plain", &plain(DirMode::Auto)), vec!["plain"]);
 }

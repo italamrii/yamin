@@ -32,6 +32,9 @@ pub struct Opts {
     /// Draw lam-alef in one cell instead of two (D1). For terminals without
     /// BiDi, where the second cell otherwise shows as a visible gap.
     pub compact_lamalef: bool,
+    /// Keep SGR colors/attributes: each character keeps its style after
+    /// reordering. Off: all escape sequences are removed.
+    pub color: bool,
 }
 
 impl Default for Opts {
@@ -42,26 +45,43 @@ impl Default for Opts {
             align: true,
             protect: false,
             compact_lamalef: false,
+            color: true,
         }
     }
 }
+
+const RESET: &str = "\x1b[0m";
 
 /// Drop what a terminal would not store in cells: escape sequences (CSI, OSC
 /// and two-byte ESC forms) and C0 controls. Tabs become spaces up to the next
 /// 8-column stop.
 pub fn clean(line: &str) -> String {
+    parse(line).0
+}
+
+/// [`clean`], plus the SGR style active at each output character: the SGR
+/// sequences seen since the last reset, concatenated ("" when unstyled).
+fn parse(line: &str) -> (String, Vec<String>) {
     let mut out = String::with_capacity(line.len());
+    let mut styles = Vec::new();
+    let mut style = String::new();
     let mut col = 0;
     let mut chars = line.chars().peekable();
     while let Some(c) = chars.next() {
         match c {
             '\x1b' => match chars.next() {
                 // CSI: parameters/intermediates, then a final byte 0x40..=0x7E.
+                // Only SGR (final 'm') is kept, as style state.
                 Some('[') => {
+                    let mut params = String::new();
                     for c in chars.by_ref() {
                         if ('\x40'..='\x7e').contains(&c) {
+                            if c == 'm' {
+                                apply_sgr(&mut style, &params);
+                            }
                             break;
                         }
+                        params.push(c);
                     }
                 }
                 // OSC: ends with BEL or ST (ESC \).
@@ -81,17 +101,47 @@ pub fn clean(line: &str) -> String {
             '\t' => {
                 let spaces = TAB_STOP - col % TAB_STOP;
                 out.extend(std::iter::repeat_n(' ', spaces));
+                styles.extend(std::iter::repeat_n(style.clone(), spaces));
                 col += spaces;
             }
             c if c.is_control() => {}
             c => {
                 out.push(c);
+                styles.push(style.clone());
                 // Marks take no column; wide characters (CJK, emoji) take two.
                 col += c.width().unwrap_or(0);
             }
         }
     }
-    out
+    (out, styles)
+}
+
+/// Update the style with one SGR sequence. A reset (`m`, `0m`) clears it; a
+/// sequence starting with a reset replaces it; anything else adds to it.
+fn apply_sgr(style: &mut String, params: &str) {
+    let seq = format!("\x1b[{params}m");
+    if params.is_empty() || params == "0" {
+        style.clear();
+    } else if params.starts_with("0;") {
+        *style = seq;
+    } else {
+        style.push_str(&seq);
+    }
+}
+
+/// Style of each cell: the style of its first character.
+fn cell_styles(cells: &[Cell], char_styles: &[String]) -> Vec<String> {
+    let mut i = 0;
+    cells
+        .iter()
+        .map(|cell| {
+            let s = char_styles.get(i).cloned().unwrap_or_default();
+            if let Cell::Text(t) = cell {
+                i += t.chars().count();
+            }
+            s
+        })
+        .collect()
 }
 
 /// Columns a cell fills on screen: 2 for wide characters, 0 for marks.
@@ -122,10 +172,16 @@ fn wrap(cells: &[Cell], width: usize) -> Vec<Range<usize>> {
 
 /// Lay out one line and return its visual rows, top to bottom.
 pub fn render(line: &str, opts: &Opts) -> Vec<String> {
-    let cells = cells_from_str(&clean(line));
+    let (text, char_styles) = parse(line);
+    let cells = cells_from_str(&text);
     if cells.is_empty() {
         return vec![String::new()];
     }
+    let styles = if opts.color {
+        cell_styles(&cells, &char_styles)
+    } else {
+        vec![String::new(); cells.len()]
+    };
     let width = opts.width.max(1);
     let props = match opts.dir {
         DirMode::Ltr => Props {
@@ -148,18 +204,34 @@ pub fn render(line: &str, opts: &Opts) -> Vec<String> {
             // ligature takes one cell instead of leaving a gap beside it.
             let mut used = 0;
             let mut text = String::new();
+            // Emit a style change only where the style differs from the
+            // previous visual cell; reset before switching and at row end.
+            let mut current = "";
             for vc in &l.rows[r] {
+                if matches!(vc.glyph, Glyph::LigatureTail) && opts.compact_lamalef {
+                    continue;
+                }
+                let style = styles[vc.logical].as_str();
+                if style != current {
+                    if !current.is_empty() {
+                        text.push_str(RESET);
+                    }
+                    text.push_str(style);
+                    current = style;
+                }
                 match &vc.glyph {
                     Glyph::Text(t) => {
                         text.push_str(t);
                         used += t.width();
                     }
-                    Glyph::LigatureTail if opts.compact_lamalef => {}
                     Glyph::LigatureTail | Glyph::Erased => {
                         text.push(' ');
                         used += 1;
                     }
                 }
+            }
+            if !current.is_empty() {
+                text.push_str(RESET);
             }
             let mut row = String::new();
             if opts.align && l.direction == Direction::Rtl {

@@ -16,9 +16,12 @@ options:
   --no-align           do not right-align RTL lines
   --protect            wrap each line in LRO..PDF (for terminals that do BiDi)
   --compact-lamalef    draw lam-alef in one cell (no gap in non-BiDi terminals)
+  --no-color           remove colors instead of keeping them
   -h, --help           show this help
 
-Colors and other escape sequences are removed.";
+Colors (SGR) are kept and follow their characters after reordering; other
+escape sequences (cursor movement, OSC links) are removed. --no-color removes
+colors too.";
 
 struct Args {
     opts: Opts,
@@ -59,6 +62,7 @@ fn parse(argv: &[String]) -> Result<Args, String> {
             "--no-align" => a.opts.align = false,
             "--protect" => a.opts.protect = true,
             "--compact-lamalef" => a.opts.compact_lamalef = true,
+            "--no-color" => a.opts.color = false,
             "-h" | "--help" => a.help = true,
             s if s.starts_with('-') && s != "-" => return Err(format!("unknown option: {s}")),
             file => a.files.push(file.to_string()),
