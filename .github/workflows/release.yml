@@ -1,0 +1,96 @@
+name: Release
+
+# Builds yamin-cat and yamin-test for each platform. On a `v*` tag the
+# archives are published as a GitHub release; on a pull request that touches
+# this file they are only built, to check the workflow before tagging.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths: [".github/workflows/release.yml"]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
+          - { target: x86_64-pc-windows-msvc, os: windows-latest }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }} -p yamin-cat -p yamin-test
+
+      - name: Package
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME}"
+          [[ "$GITHUB_REF" == refs/tags/* ]] || version="pr-${GITHUB_SHA::7}"
+          name="yamin-${version}-${{ matrix.target }}"
+          ext=""; [[ "${{ matrix.target }}" == *windows* ]] && ext=".exe"
+          mkdir -p "dist/$name"
+          for bin in yamin-cat yamin-test; do
+            cp "target/${{ matrix.target }}/release/${bin}${ext}" "dist/$name/"
+          done
+          cp README.md CHANGELOG.md "dist/$name/"
+          cp -r examples "dist/$name/"
+          cd dist
+          if [[ -n "$ext" ]]; then
+            7z a -tzip "$name.zip" "$name" > /dev/null
+          else
+            tar czf "$name.tar.gz" "$name"
+          fi
+          rm -rf "$name"
+          ls -l
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: dist/*
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums and notes
+        run: |
+          cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS && cd ..
+          # Release notes = this version's section of CHANGELOG.md.
+          awk -v v="${GITHUB_REF_NAME#v}" '
+            /^## \[/ { on = index($0, "[" v "]") > 0; next }
+            on' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "No CHANGELOG section for ${GITHUB_REF_NAME}"; exit 1; }
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "yamin $GITHUB_REF_NAME" \
+            --notes-file notes.md \
+            --verify-tag
