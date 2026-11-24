@@ -4,6 +4,30 @@
 
 - **`yamin-test`:** أداة مطابقة من 40 حالة.
 - **`yamin`:** المكتبة، وتطبّق القرارات المعتمدة في [docs/spec.md](docs/spec.md). نجحت في الحالات الأربعين كلها.
+- **`yamin-cat`:** أداة تمرّر النص عبر المكتبة، فيظهر العربي صحيحًا في أي terminal، حتى لو ما يدعم BiDi.
+
+## yamin-cat
+
+```sh
+cargo run -q -p yamin-cat -- examples/arabic.txt         # ملف
+some-command | cargo run -q -p yamin-cat                 # أو مخرجات أي أمر
+cargo run -q -p yamin-cat -- --dir rtl --width 40 notes.txt
+```
+
+| الخيار | المعنى |
+|---|---|
+| `--dir ltr\|rtl\|auto` | اتجاه الفقرة. الافتراضي `auto`: أول حرف strong يحدد الاتجاه |
+| `--width N` | العرض اللي تلتف عنده السطور وتُحاذى له سطور RTL. الافتراضي عرض الـ terminal، أو 80 إذا ما عُرف |
+| `--no-align` | لا تُحاذى سطور RTL لليمين |
+| `--protect` | يحيط كل سطر بـ LRO…PDF، للـ terminals اللي تطبّق BiDi بنفسها |
+
+كل سطر يُعامل كفقرة مستقلة. الألوان وتسلسلات الهروب تُحذف في هذا الإصدار.
+
+**ملاحظة لـ Windows PowerShell 5.1:** عند تمرير نص عبر `|` إلى برنامج خارجي، يرسله PowerShell بترميز ASCII، فيصير العربي `?`. الحل: مرّر اسم الملف مباشرة، أو نفّذ هذا السطر قبل استخدام `|`:
+
+```powershell
+$OutputEncoding = [Text.UTF8Encoding]::new()
+```
 
 ## yamin (المكتبة)
 
