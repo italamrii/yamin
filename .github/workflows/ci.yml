@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+
+      # The bottom of the PR stack (CI, spec) has no Rust code yet.
+      - name: Detect Cargo workspace
+        id: cargo
+        shell: bash
+        run: |
+          if [ -f Cargo.toml ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "No Cargo.toml: nothing to build."; fi
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.cargo.outputs.present == 'true'
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.cargo.outputs.present == 'true'
+
+      - name: Test
+        if: steps.cargo.outputs.present == 'true'
+        run: cargo test --workspace --locked
+
+      - name: Clippy
+        if: steps.cargo.outputs.present == 'true'
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
