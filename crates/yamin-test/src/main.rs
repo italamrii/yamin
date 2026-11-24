@@ -16,6 +16,7 @@ commands:
                                         judge each case pass/fail; writes
                                         DIR/<stem>.json and DIR/<stem>.md
                                         (--cli none = bare shell; DIR defaults to reports)
+  matrix [--reports DIR] [--out FILE]   terminals x AI CLI table from DIR/*.json
 
 display options (show, eval):
   --no-escapes    do not emit BDSM/SCP escape sequences
@@ -31,6 +32,7 @@ struct Args {
     out: Option<String>,
     terminal: Option<String>,
     cli: Option<String>,
+    reports: Option<String>,
     opts: Opts,
 }
 
@@ -44,6 +46,7 @@ fn parse(argv: &[String]) -> Result<Args, String> {
         out: None,
         terminal: None,
         cli: None,
+        reports: None,
         opts: Opts::default(),
     };
     while let Some(arg) = it.next() {
@@ -61,6 +64,7 @@ fn parse(argv: &[String]) -> Result<Args, String> {
             "--out" => a.out = Some(value("--out")?),
             "--terminal" => a.terminal = Some(value("--terminal")?),
             "--cli" => a.cli = Some(value("--cli")?),
+            "--reports" => a.reports = Some(value("--reports")?),
             "--no-escapes" => a.opts.escapes = false,
             "--no-controls" => a.opts.controls = false,
             "--codepoints" => a.opts.codepoints = true,
@@ -118,6 +122,17 @@ fn run(a: Args) -> Result<(), String> {
             }
             let s = report::summary(&r);
             println!("{}/{} passed ({}%), {} skipped", s.pass, s.evaluated(), s.pass_pct(), s.skip);
+        }
+        "matrix" => {
+            let dir = a.reports.as_deref().unwrap_or("reports");
+            let md = yamin_test::matrix::build(&yamin_test::matrix::load_dir(dir.as_ref())?);
+            match a.out {
+                Some(path) => {
+                    std::fs::write(&path, md).map_err(|e| format!("{path}: {e}"))?;
+                    println!("wrote {path}");
+                }
+                None => print!("{md}"),
+            }
         }
         "help" | "--help" | "-h" => println!("{USAGE}"),
         other => return Err(format!("unknown command: {other}")),

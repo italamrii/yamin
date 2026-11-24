@@ -86,3 +86,22 @@ fn eval_requires_terminal_and_cli() {
     assert!(!ok);
     assert!(err.contains("--terminal"));
 }
+
+#[test]
+fn matrix_reads_reports_dir() {
+    let dir = std::env::temp_dir().join(format!("yamin-matrix-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("a.json"),
+        r#"{"tool":"yamin-test","version":"0.1.0","terminal":"foot","cli":"none","date":"2026-11-24",
+            "results":[{"id":"arabic-01","category":"arabic","verdict":"pass"},
+                       {"id":"arabic-02","category":"arabic","verdict":"fail","note":"x"}]}"#,
+    )
+    .unwrap();
+    std::fs::write(dir.join("a.md"), "ignored").unwrap();
+    let (ok, out, err) = run(&["matrix", "--reports", dir.to_str().unwrap()]);
+    assert!(ok, "{err}");
+    assert!(out.contains("| foot | 1/2 (50%) |"), "{out}");
+    let _ = std::fs::remove_dir_all(&dir);
+}

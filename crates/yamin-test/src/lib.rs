@@ -10,3 +10,4 @@ pub mod html;
 pub mod terminal;
 pub mod eval;
 pub mod report;
+pub mod matrix;
